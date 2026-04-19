@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "streamlit-demo2-onepackage"
+version = "1.0.0"
+description = "Streamlit demo: 100 falling random numbers with rolling average — self-contained entry point"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.32.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+]
+
+[project.scripts]
+streamlit-demo2 = "streamlit_demo2.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/streamlit_demo2"]
