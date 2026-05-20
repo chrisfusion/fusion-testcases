@@ -7,5 +7,6 @@ cpuMax: 500
 memoryMax: 1Gi
 cpuMin: 200
 memoryMin: 500Mi
-python: 3.12
+image: python3.12
 runner: streamlit
+
