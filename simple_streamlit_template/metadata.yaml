@@ -7,6 +7,6 @@ cpuMax: 500
 memoryMax: 1Gi
 cpuMin: 200
 memoryMin: 500Mi
-image: python3.12
+builderImage: python3.12
 runner: streamlit
 
