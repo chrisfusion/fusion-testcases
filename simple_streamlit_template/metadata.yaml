@@ -2,4 +2,10 @@ name: test-template
 version: 0.1.0
 maintainer: some.maintainer@example.local
 pathprefix: testproject
-externalvenv: dummyurl
+basedependencies: dummyurl
+cpuMax: 500
+memoryMax: 1Gi
+cpuMin: 200
+memoryMin: 500Mi
+python: 3.12
+runner: streamlit
