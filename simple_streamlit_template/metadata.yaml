@@ -8,5 +8,10 @@ memoryMax: 1Gi
 cpuMin: 200
 memoryMin: 500Mi
 builderImage: python3.12
-runner: streamlit
+runner: 
+  type: streamlit
+  args:
+  - name: ENTRYPOINT
+    value: "main.py"
+
 
