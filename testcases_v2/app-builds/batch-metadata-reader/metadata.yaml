@@ -1,10 +1,11 @@
 name: batch-metadata-reader
-version: 0.1.0
+version: 0.1.1
 maintainer: some.maintainer@example.local
 builderImage: python3.12
 # Non-web app: no runner.port, no ingress — same shape as batch-report-generator.
+# runner.type: "python" execs the entrypoint directly, no web server/port assumed.
 runner:
-  type: batch
+  type: python
   args:
     ENTRYPOINT: "main.py"
 resources:

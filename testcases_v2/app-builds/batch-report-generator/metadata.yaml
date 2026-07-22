@@ -1,13 +1,14 @@
 name: batch-report-generator
-version: 0.1.0
+version: 0.1.1
 maintainer: some.maintainer@example.local
 builderImage: python3.12
 # Non-web app: no runner.port, no ingress. Intended for a Job-kind step
-# (WeaveJobTemplate.spec.codeSource), not a Deploy-kind step — the runner.type
-# here is informational only, fusion-forge does not validate it and nothing
-# in the build path assumes a port exists.
+# (WeaveJobTemplate.spec.codeSource), not a Deploy-kind step. runner.type must
+# be a type fusion-runner actually implements (internal/runner/runner.go) —
+# "python" execs the entrypoint directly with no web server/port assumptions,
+# unlike "streamlit" (see fusion-runner/CLAUDE.md for the full type list).
 runner:
-  type: batch
+  type: python
   args:
     ENTRYPOINT: "main.py"
 resources:
