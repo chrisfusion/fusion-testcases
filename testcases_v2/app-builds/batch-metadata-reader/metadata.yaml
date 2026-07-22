@@ -1,0 +1,16 @@
+name: batch-metadata-reader
+version: 0.1.0
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Non-web app: no runner.port, no ingress — same shape as batch-report-generator.
+runner:
+  type: batch
+  args:
+    ENTRYPOINT: "main.py"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"

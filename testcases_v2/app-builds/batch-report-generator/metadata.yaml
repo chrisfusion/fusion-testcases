@@ -1,0 +1,19 @@
+name: batch-report-generator
+version: 0.1.0
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Non-web app: no runner.port, no ingress. Intended for a Job-kind step
+# (WeaveJobTemplate.spec.codeSource), not a Deploy-kind step — the runner.type
+# here is informational only, fusion-forge does not validate it and nothing
+# in the build path assumes a port exists.
+runner:
+  type: batch
+  args:
+    ENTRYPOINT: "main.py"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"

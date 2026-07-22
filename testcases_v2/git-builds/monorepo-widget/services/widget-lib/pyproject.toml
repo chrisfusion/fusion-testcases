@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "widget-lib"
+version = "1.0.0"
+description = "Tiny reusable formatting helper, nested under services/ in a monorepo"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/widget_lib"]
