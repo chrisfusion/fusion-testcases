@@ -35,3 +35,7 @@ Thumbs.db
 
 # Playwright MCP logs
 .playwright-mcp/
+
+# Claude Code (local)
+.claude/
+.claude.local.md
