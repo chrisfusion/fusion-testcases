@@ -1,0 +1,108 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# One WeaveJobTemplate + one codeSource artifact (venv.etl-pipeline) shared by
+# all 5 chain steps. Each step only differs by ENTRYPOINT (envOverrides),
+# picking which flat script in the repo to run:
+#
+#   extract -> {transform_customers, transform_orders} (parallel) -> merge -> load
+#
+# This artifact is a plain "venv build" (POST /api/v1/venvs), so it has no
+# metadata.yaml. That matters: if it did (app-build shape) and metadata.yaml
+# set runner.args.ENTRYPOINT, that value is appended to the container env
+# AFTER step.envOverrides and wins on duplicate keys (last-value-wins) —
+# every step's ENTRYPOINT override would be silently ignored. Use a
+# metadata-less artifact whenever more than one entry point shares it.
+#
+# Publish (out-of-band — this shape has no fusion-forge multi-file automation,
+# see ../../README.md):
+#   INDEX=http://localhost:8099
+#   curl -F "name=etl-pipeline" -F "version=1.0.0" -F "requirements=@requirements.txt" \
+#     $INDEX/api/v1/venvs
+#   # then upload each flat script as an extra file on that same version:
+#   for f in extract.py transform_customers.py transform_orders.py merge.py load.py; do
+#     curl -F "file=@$f" $INDEX/api/v1/artifacts/<artifact-id>/versions/1.0.0/files
+#   done
+#   # then move the "stable" tag to 1.0.0 (see fusion-flux CLAUDE.md tag-move notes:
+#   # PUT .../tags/stable needs both "version" and "versionId" in the body)
+#
+# Fire:
+#   kubectl annotate weavetrigger etl-pipeline-trigger fusion-platform.io/fire=true --overwrite -n fusion
+# Monitor:
+#   kubectl get fr -n fusion -w
+---
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveJobTemplate
+metadata:
+  name: etl-pipeline
+  namespace: fusion
+spec:
+  image: fusion-runner-python312:local
+  env:
+    # No metadata.yaml on this artifact (by design, see note above), so
+    # fusion-runner's WEAVE_RUNNER_TYPE is never auto-injected — set it
+    # statically to select PythonRunner (the one that reads ENTRYPOINT).
+    - name: WEAVE_RUNNER_TYPE
+      value: python
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  codeSource:
+    artifactName: venv.etl-pipeline
+    tag: stable
+---
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveChain
+metadata:
+  name: etl-pipeline
+  namespace: fusion
+spec:
+  failurePolicy: StopAll
+  concurrencyPolicy: Wait
+  steps:
+    - name: extract
+      jobTemplateRef:
+        name: etl-pipeline
+      envOverrides:
+        - name: ENTRYPOINT
+          value: extract.py
+    - name: transform-customers
+      dependsOn: [extract]
+      jobTemplateRef:
+        name: etl-pipeline
+      envOverrides:
+        - name: ENTRYPOINT
+          value: transform_customers.py
+    - name: transform-orders
+      dependsOn: [extract]
+      jobTemplateRef:
+        name: etl-pipeline
+      envOverrides:
+        - name: ENTRYPOINT
+          value: transform_orders.py
+    - name: merge
+      dependsOn: [transform-customers, transform-orders]
+      jobTemplateRef:
+        name: etl-pipeline
+      envOverrides:
+        - name: ENTRYPOINT
+          value: merge.py
+    - name: load
+      dependsOn: [merge]
+      jobTemplateRef:
+        name: etl-pipeline
+      envOverrides:
+        - name: ENTRYPOINT
+          value: load.py
+---
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveTrigger
+metadata:
+  name: etl-pipeline-trigger
+  namespace: fusion
+spec:
+  chainRef:
+    name: etl-pipeline
+  type: OnDemand
