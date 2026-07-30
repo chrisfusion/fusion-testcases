@@ -138,3 +138,45 @@ cosmetic.
 | Source | `testcases_v2/venv-builds/etl-pipeline/chain.yaml` |
 
 Built and fired on minikube, namespace `fusion`, 2026-07-28.
+
+## Update 2026-07-30 — converted to an automated app-build via `files: []`
+
+fusion-forge gained a `files` key on `metadata.yaml` for app builds: absent means the
+old `main.py`-only behavior, `files: []` auto-discovers every top-level `*.py` file,
+`files: [a.py, b.py]` uploads exactly those. This closes the one gap the original
+build above had to work around out-of-band ("the five scripts were uploaded
+separately, straight to fusion-index... published out of band").
+
+This directory moved from `venv-builds/etl-pipeline/` to `app-builds/etl-pipeline/`
+and gained a `metadata.yaml` (`files: []`, `runner: {type: python}`, no `runner.args`).
+`chain.yaml`'s `codeSource.artifactName` changed from `venv.etl-pipeline` to
+`app.etl-pipeline`, and the static `WEAVE_RUNNER_TYPE: python` env override from
+Gotcha 2 was removed — `runner.type` in metadata.yaml now supplies it automatically.
+
+**Gotcha 1 still applies, in a stricter form.** This artifact now genuinely has a
+`metadata.yaml`, so the failure mode Gotcha 1 warns about is one edit away: adding
+`runner.args.ENTRYPOINT` to this file would have `codesource.EnvVars` inject an
+`ENTRYPOINT` env var *after* the per-step `mergeEnv` pass, again silently overriding
+every step's `envOverrides.ENTRYPOINT` (last-value-wins in the pod spec). The fix
+isn't "no metadata" anymore — it's "no `runner.args` on an artifact meant for more
+than one entry point." `runner.type` alone is fine, since only `runner.args` keys are
+appended unconditionally.
+
+**Automated via GitWatcher, not a manual `curl` sequence.** `gitwatcher_etl_pipeline.yaml`
+(`../../fusion-forge/config/samples/`) watches this repo/path with `buildType: app`;
+on push, the watcher reads `metadata.yaml`, resolves `2.0.0`, and triggers the build —
+no manual `POST /api/v1/venvs` + per-file `curl` loop.
+
+### Receipts (rebuild)
+
+| | |
+|---|---|
+| GitWatcher | `etl-pipeline-watcher`, `projectDir: testcases_v2/app-builds/etl-pipeline` |
+| fusion-index artifact | `app.etl-pipeline` (id 1651) |
+| Version | `2.0.0` (versionId 4751) — 7 files (venvpack + 5 scripts + `metadata.yaml`), tag: `stable` |
+| Build | `forge-app-78` (CIBuild, app, `fileUploadMode: auto`) — builder log: `auto-discovered 5 python file(s): [extract.py load.py merge.py transform_customers.py transform_orders.py]` |
+| Run | `etl-pipeline-trigger-5c9xs` → Succeeded |
+| Measured concurrency | `transform-customers` and `transform-orders` both started `2026-07-30T22:49:23Z` (same second) — `extract` 22:49:18 → `merge` 22:49:27 → `load` 22:49:32 |
+| Source | `testcases_v2/app-builds/etl-pipeline/chain.yaml`, `../../fusion-forge/config/samples/gitwatcher_etl_pipeline.yaml` |
+
+Rebuilt and refired on the same minikube cluster, namespace `fusion`, 2026-07-30.
