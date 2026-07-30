@@ -1,28 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# One WeaveJobTemplate + one codeSource artifact (venv.etl-pipeline) shared by
+# One WeaveJobTemplate + one codeSource artifact (app.etl-pipeline) shared by
 # all 5 chain steps. Each step only differs by ENTRYPOINT (envOverrides),
 # picking which flat script in the repo to run:
 #
 #   extract -> {transform_customers, transform_orders} (parallel) -> merge -> load
 #
-# This artifact is a plain "venv build" (POST /api/v1/venvs), so it has no
-# metadata.yaml. That matters: if it did (app-build shape) and metadata.yaml
-# set runner.args.ENTRYPOINT, that value is appended to the container env
-# AFTER step.envOverrides and wins on duplicate keys (last-value-wins) —
-# every step's ENTRYPOINT override would be silently ignored. Use a
-# metadata-less artifact whenever more than one entry point shares it.
+# This is an app build (POST /api/v1/appbuilds or a GitWatcher with
+# buildType: app) with a metadata.yaml — but that metadata.yaml deliberately
+# sets no runner.args (only runner.type). That matters: runner.args keys are
+# appended to the container env by codesource.EnvVars AFTER step.envOverrides
+# and win on duplicate keys (last-value-wins) — if metadata set
+# runner.args.ENTRYPOINT, every step's ENTRYPOINT override would be silently
+# ignored. runner.type alone is safe (it only sets WEAVE_RUNNER_TYPE, so the
+# static override below is no longer needed) — see metadata.yaml and
+# EXPLANATION.md for the full mechanism, and ../../README.md.
 #
-# Publish (out-of-band — this shape has no fusion-forge multi-file automation,
-# see ../../README.md):
-#   INDEX=http://localhost:8099
-#   curl -F "name=etl-pipeline" -F "version=1.0.0" -F "requirements=@requirements.txt" \
-#     $INDEX/api/v1/venvs
-#   # then upload each flat script as an extra file on that same version:
-#   for f in extract.py transform_customers.py transform_orders.py merge.py load.py; do
-#     curl -F "file=@$f" $INDEX/api/v1/artifacts/<artifact-id>/versions/1.0.0/files
-#   done
-#   # then move the "stable" tag to 1.0.0 (see fusion-flux CLAUDE.md tag-move notes:
-#   # PUT .../tags/stable needs both "version" and "versionId" in the body)
+# The 5 scripts are uploaded automatically as sibling files on the artifact's
+# fusion-index version via metadata.yaml's `files: []` (auto-discover mode) —
+# no more out-of-band per-file upload. Publish either:
+#   - one-off: POST /api/v1/appbuilds (JSON: repo_url, repo_ref, project_dir)
+#     against fusion-forge, then move the "stable" tag to the resulting
+#     version (PUT .../tags/stable needs both "version" and "versionId")
+#   - GitOps: a GitWatcher with buildType: app, projectDir pointing here
 #
 # Fire:
 #   kubectl annotate weavetrigger etl-pipeline-trigger fusion-platform.io/fire=true --overwrite -n fusion
@@ -36,12 +35,6 @@ metadata:
   namespace: fusion
 spec:
   image: fusion-runner-python312:local
-  env:
-    # No metadata.yaml on this artifact (by design, see note above), so
-    # fusion-runner's WEAVE_RUNNER_TYPE is never auto-injected — set it
-    # statically to select PythonRunner (the one that reads ENTRYPOINT).
-    - name: WEAVE_RUNNER_TYPE
-      value: python
   resources:
     requests:
       cpu: 100m
@@ -50,7 +43,7 @@ spec:
       cpu: 300m
       memory: 256Mi
   codeSource:
-    artifactName: venv.etl-pipeline
+    artifactName: app.etl-pipeline
     tag: stable
 ---
 apiVersion: weave.fusion-platform.io/v1alpha1

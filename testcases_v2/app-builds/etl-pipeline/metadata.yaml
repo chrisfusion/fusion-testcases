@@ -1,0 +1,17 @@
+name: etl-pipeline
+version: 2.0.0
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Multi-entrypoint job build: no runner.args.ENTRYPOINT here on purpose — this
+# artifact is reused by five different WeaveChain steps, each picking its own
+# script via a per-step envOverrides ENTRYPOINT. runner.type alone (no args)
+# is safe to set: only runner.args keys are unconditionally appended as env
+# vars by codesource.EnvVars, so this doesn't collide with per-step
+# overrides. See EXPLANATION.md and ../../README.md for the full mechanism.
+runner:
+  type: python
+# files: [] -> auto-discover every top-level *.py file (extract.py,
+# transform_customers.py, transform_orders.py, merge.py, load.py) and upload
+# each as a sibling file on this artifact's fusion-index version, instead of
+# requiring a single main.py.
+files: []
