@@ -1,0 +1,15 @@
+name: wizard-test-job
+version: 1.0.0
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Fixture for fusion-spectra's "Git -> Python Job" wizard: multi-entrypoint
+# job build with no runner.args.ENTRYPOINT — each Weave run supplies its own
+# ENTRYPOINT via the wizard-created trigger's parameterOverrides instead.
+# Isolated copy of ../etl-pipeline with a unique name/version so testing this
+# wizard doesn't move the "stable" tag that the real etl-pipeline job
+# templates depend on.
+runner:
+  type: python
+# files: [] -> auto-discover every top-level *.py file (extract.py,
+# transform_customers.py, transform_orders.py, merge.py, load.py).
+files: []
