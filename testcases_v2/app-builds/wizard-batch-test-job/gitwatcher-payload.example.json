@@ -1,0 +1,8 @@
+{
+  "name": "wizard-batch-test-job",
+  "repo_url": "http://gitea.fusion.local/gitea_admin/fusion-testcases.git",
+  "repo_ref": "wizard-batch-demo",
+  "build_type": "app",
+  "project_dir": "testcases_v2/app-builds/wizard-batch-test-job",
+  "description": "Manual test: Git -> Batch Job wizard fixture, single fixed-entrypoint batch job on a dedicated branch"
+}
