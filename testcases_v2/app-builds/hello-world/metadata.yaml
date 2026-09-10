@@ -1,0 +1,13 @@
+name: hello-world
+version: 1.0.0
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Minimal fixture for fusion-spectra's "Git -> Python Job" wizard: two
+# unrelated, independent scripts (unlike etl-pipeline's ordered steps) so the
+# wizard's one-trigger-per-entrypoint behavior is easy to see and verify.
+# No runner.args.ENTRYPOINT — each Weave trigger supplies its own via
+# parameterOverrides instead.
+runner:
+  type: python
+# files: [] -> auto-discover every top-level *.py file (hello.py, goodbye.py).
+files: []
