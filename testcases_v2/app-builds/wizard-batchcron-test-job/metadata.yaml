@@ -1,0 +1,19 @@
+name: wizard-batchcron-test-job
+version: 0.1.1
+maintainer: some.maintainer@example.local
+builderImage: python3.12
+# Non-web app: no runner.port, no ingress — same shape as wizard-batch-test-job.
+# Isolated fixture for the Git -> BatchCron Job wizard: unique `name` so its own
+# "stable" tag never touches the other batch fixtures, and lives on the
+# `wizard-batchcron-demo` branch (not main) to exercise branch selection.
+runner:
+  type: python
+  args:
+    ENTRYPOINT: "main.py"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"

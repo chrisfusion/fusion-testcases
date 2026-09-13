@@ -1,0 +1,8 @@
+{
+  "name": "wizard-batchcron-test-job",
+  "repo_url": "http://gitea.fusion.local/gitea_admin/fusion-testcases.git",
+  "repo_ref": "wizard-batchcron-demo",
+  "build_type": "app",
+  "project_dir": "testcases_v2/app-builds/wizard-batchcron-test-job",
+  "description": "Manual test: Git -> BatchCron Job wizard fixture, single fixed-entrypoint job driven by a BatchCron trigger's job list, on a dedicated branch"
+}

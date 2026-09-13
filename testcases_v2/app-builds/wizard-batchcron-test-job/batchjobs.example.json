@@ -1,0 +1,30 @@
+[
+  {
+    "job": {
+      "id": "daily-report",
+      "name": "Daily Report",
+      "schedule": "0 9 * * *",
+      "topic": "reports",
+      "maintainer": "alice@example.com",
+      "metadata": { "region": "eu-west" }
+    }
+  },
+  {
+    "job": {
+      "id": "weekly-cleanup",
+      "name": "Weekly Cleanup",
+      "schedule": "0 3 * * 1",
+      "topic": "maintenance",
+      "maintainer": "bob@example.com",
+      "startdate": "2026-09-15",
+      "starttime": "03:00",
+      "metadata": { "region": "us-east", "dryRun": false }
+    }
+  },
+  {
+    "job": {
+      "id": "hourly-sync",
+      "schedule": "0 * * * *"
+    }
+  }
+]
