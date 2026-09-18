@@ -4,7 +4,7 @@ import os
 # Injected by fusion-weave's codeSource mechanism (internal/codesource), same
 # for a Job-kind step as a Deploy-kind step — this is *this artifact's own*
 # metadata as resolved from fusion-index at container start. WEAVE_PORT and
-# WEAVE_INGRESS_PATH_PREFIX are expected empty here since this app has no
+# WEAVE_INGRESS_PATH are expected empty here since this app has no
 # runner.port/ingress in its own metadata.yaml.
 ARTIFACT_KEYS = [
     "WEAVE_ARTIFACT",
@@ -16,7 +16,7 @@ ARTIFACT_KEYS = [
     "WEAVE_BUILDER_IMAGE",
     "WEAVE_MAINTAINER",
     "WEAVE_PORT",
-    "WEAVE_INGRESS_PATH_PREFIX",
+    "WEAVE_INGRESS_PATH",
 ]
 
 # Injected per-job by a BatchCron WeaveTrigger (internal/trigger/batchjobs.go)

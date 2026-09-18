@@ -8,7 +8,7 @@ runner:
   args:
     ENTRYPOINT: "main.py"
 ingress:
-  pathPrefix: testproject
+  path: testproject
 resources:
   requests:
     cpu: "200m"
