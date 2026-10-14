@@ -31,6 +31,15 @@ Every entry has its own type: `OnDemand` or `Cron` with a schedule — mixing th
 | Entrypoints | `count.py` OnDemand, `top.py` OnDemand, `longest.py` OnDemand (or Cron with a schedule) |
 | External auth | not used here (see [`../template-wizard-job-single-entrypoint`](../template-wizard-job-single-entrypoint/README.md)) |
 
+## Only for the Git Python job wizard
+
+This repository does **not** work with the two batch wizards (`batch-git-job`, `batchcron-git-job`). They create
+a trigger without an `ENTRYPOINT` setting and have no entrypoint field, and this artifact deliberately sets none
+(no `main.py`, no `runner.args.ENTRYPOINT`). The job then stops at startup with
+`ENTRYPOINT env var is not set` and the run ends `Stopped`. Use the Git Python job wizard, which creates one
+trigger per entrypoint — or, for the batch wizards, a repository with a single entrypoint such as
+[`../template-wizard-job-single-entrypoint`](../template-wizard-job-single-entrypoint/README.md).
+
 ## Rules for several entrypoints
 
 - **No `main.py`** is needed, but every script you list must be a **top-level** `.py` file.

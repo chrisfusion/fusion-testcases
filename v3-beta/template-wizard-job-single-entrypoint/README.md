@@ -32,6 +32,23 @@ removes everything it created.
 Mode and name are set together or not at all. The name must be on the cluster's allowlist; the
 wizard offers only those names.
 
+## Other wizards: the batch wizards
+
+The same repository also works with the two **batch** wizards, because it has exactly one fixed entrypoint
+(`runner.args.ENTRYPOINT: main.py`). They differ in how the job is started:
+
+| Wizard | Creates | Starts | Form fields (besides repository and job name) |
+|---|---|---|---|
+| Git Python job (above) | one trigger per listed entrypoint | when you fire it, or on its cron | entrypoints, optional external auth |
+| **Git batch job** (`batch-git-job`) | one trigger | **once immediately**, then on demand or by cron | trigger type `OnDemand` / `Cron`, schedule, optional external auth (chain level and per trigger) |
+| **Git batch cron job** (`batchcron-git-job`) | one *BatchCron* trigger with a list of jobs | by the cron expression of each list entry | jobs list, optional external auth (chain level only) |
+
+The batch wizards have no entrypoint field: the entrypoint is whatever `metadata.yaml` says, here `main.py`.
+That is why a repository with several entrypoints needs the Git Python job wizard instead (see
+[`../template-wizard-job-multi-entrypoint`](../template-wizard-job-multi-entrypoint/README.md)).
+Token injection by file works the same in all three. Each BatchCron run also gets one `JOB_*` env var per field
+of its list entry (`JOB_ID`, `JOB_NAME`, `JOB_TOPIC`, ...); this example does not print them.
+
 ## Token injection by file
 
 With external auth set, the operator mints a **fresh, short-lived token for every job pod** and mounts

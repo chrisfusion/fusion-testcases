@@ -52,6 +52,18 @@ kubectl logs -n fusion -l fusion-platform.io/chain=wizard-multi --tail=20
 Expected: `count: 730 words, 403 distinct, 4.8 kB`, a top-5 table (`er`, `die`, `und`, `der`, `zu`) and
 `longest words: auseinandergepackte, möbelerschütternde, musterkollektion`.
 
+## Not usable with the batch wizards (tested)
+
+`batch-git-job` and `batchcron-git-job` were run against this directory on minikube. Wizard runs and builds
+succeed, but every job fails at startup, because neither wizard sets an `ENTRYPOINT`:
+
+```
+level=ERROR msg="setup failed" ... runnerType=python error="ENTRYPOINT env var is not set"
+```
+
+and the run ends `Stopped` (`Job has reached the specified backoff limit`). BatchCron entries only carry the
+fixed `JOB_*` fields, so they cannot select a script either. Use `python-git-job` for this repository.
+
 ## Roll back
 
 Set `spec.desiredState: RolledBack` on the `WizardRun`; the wizard removes what it created, ref-counted
