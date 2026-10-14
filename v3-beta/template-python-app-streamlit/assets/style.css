@@ -1,0 +1,18 @@
+/* Custom styles, injected by wordviz/theme.py with st.markdown(<style>). */
+
+/* A bit more breathing room above the banner. */
+.block-container { padding-top: 2rem; }
+
+/* The three metric cards: icon on the left, number and label on the right. */
+.metric-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(40, 100, 190, 0.25);
+    border-radius: 12px;
+    background: rgba(40, 100, 190, 0.06);
+}
+.metric-card img { width: 36px; height: 36px; }
+.metric-card .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+.metric-card .label { font-size: 0.85rem; opacity: 0.7; }

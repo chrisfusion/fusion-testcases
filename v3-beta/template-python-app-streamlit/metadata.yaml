@@ -1,0 +1,38 @@
+# Read by fusion-forge (app build). name/version/builderImage come from here,
+# not from the API call.
+
+# Artifact name in fusion-index -> `app.template-python-app-streamlit`.
+name: template-python-app-streamlit
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# How the app is started by fusion-runner.
+runner:
+  # `streamlit` = the runner starts `python -m streamlit run <ENTRYPOINT>` headless
+  # on 0.0.0.0 and the given port. A long-running web service -> a Deploy-kind
+  # step (not a Job step like the batch templates).
+  type: streamlit
+  # Port the app listens on. Must match the port of the service template.
+  port: 8501
+  args:
+    # Script handed to `streamlit run`: main.py in the repo root.
+    ENTRYPOINT: "main.py"
+
+# Optional: serve the app under a URL path segment instead of at the root, e.g.
+#   ingress:
+#     path: wordcount      # -> https://<host>/wordcount
+# The runner passes it on to streamlit (baseUrlPath). Not set here: the app is
+# served at "/" of its own hostname. (The hostname itself is NOT configured here
+# but on the service template's ingress rule, see README_technical.md.)
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "500Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
