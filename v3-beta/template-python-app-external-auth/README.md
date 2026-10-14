@@ -67,8 +67,8 @@ The chain is only valid if the identity is allowlisted and exists:
 
 ## Lifetime
 
-`serviceAccount` tokens live as long as the job's `activeDeadlineSeconds` (if set on the
-template), otherwise Helm `externalAuth.defaultTokenTTL` (default 5 minutes). Kubernetes
+`serviceAccount` tokens live about as long as the job's `activeDeadlineSeconds` (if set on the
+template; a 600-second deadline produced a token with about 11 minutes left in a real run), otherwise Helm `externalAuth.defaultTokenTTL` (default 5 minutes). Kubernetes
 enforces a minimum of 10 minutes, so shorter values are raised to that. For `oidc` the
 Keycloak client's own access-token lifespan applies. Read the token when you need it;
 do not store it beyond the job.
