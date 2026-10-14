@@ -38,6 +38,10 @@ The run-owned Deployment and Service are named `<runName>-<stepName>`, here `etl
 Expected logs: `extract: 141034 chars raw -> 120497 chars clean ...`, then
 `count: 19148 words, 3738 distinct ...` and `top 5: [('die', 626), ('und', 624), ...]`.
 
+## Troubleshooting
+
+- `PermissionError: [Errno 13] Permission denied: '/weave-shared/clean.txt'` in the `extract` log: the volume is owned by root, the runner image runs as uid 1000. Set `fsGroup: 1000` in the `podSecurityContext` of the templates (as in the manifests below) or, once per cluster, in the operator's workload security defaults. Needs a storage driver that applies `fsGroup` (the minikube `csi-hostpath-sc` does).
+
 ## Internals
 
 - `sharedStorage` provisions a PVC `<runName>-shared` (ReadWriteMany) per run, owned by the WeaveRun. Mounted at `/weave-shared` in job pods (`jobbuilder`) and in run-owned deploy steps (`deploybuilder.ApplySharedStorage`); not in chain-owned deploy steps. On minikube RWX needs a suitable class such as `csi-hostpath-sc`.
@@ -59,6 +63,8 @@ metadata:
   namespace: fusion
 spec:
   image: fusion-runner-python312:local
+  podSecurityContext:               # see "Volume permissions" in README.md
+    fsGroup: 1000                   # gid of the `runner` user in the runner image
   env:
     - name: WEAVE_RUNNER_TYPE      # the artifact sets no runner type, each template says it
       value: python
@@ -86,6 +92,8 @@ spec:
       port: 8501
       targetPort: 8501
       protocol: TCP
+  podSecurityContext:
+    fsGroup: 1000
   env:
     - name: WEAVE_RUNNER_TYPE
       value: streamlit

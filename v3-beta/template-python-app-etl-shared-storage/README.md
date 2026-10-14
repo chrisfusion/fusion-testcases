@@ -47,6 +47,15 @@ and `count` finds it there. Things to know:
 - **Consequence:** the pipeline is started by creating a **run** that carries the dashboard override (`artifactName`, `tag`, optionally `ingressName`), not by a plain trigger. The dashboard stays up as long as the run exists; deleting the run removes the dashboard and the volume.
 - The storage class must support `ReadWriteMany` (several pods at the same time).
 
+### Volume permissions
+
+A new volume is owned by root, but the runner image runs as an unprivileged user (uid/gid 1000), which
+then cannot write: `Permission denied: '/weave-shared/clean.txt'`. Fix it with the pod setting
+**`fsGroup: 1000`** (Kubernetes then makes the volume group-writable on mount). Set it on the job template
+and the service template as the manifests do, or once for the whole cluster in the operator's workload
+security defaults. The storage driver must honour `fsGroup`. Note that a template-level pod security
+context replaces the operator-wide default entirely, so repeat any settings you need from it.
+
 ## Settings in Spectra
 
 | Where | Setting |
