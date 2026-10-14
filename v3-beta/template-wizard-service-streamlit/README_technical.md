@@ -34,9 +34,10 @@ spec:
 
 ```bash
 kubectl get pods,svc -n fusion | grep wizard-words        # wait for the pod to be Ready
-kubectl port-forward -n fusion svc/<service-name> 8501:8501    # then open http://localhost:8501
+kubectl port-forward -n fusion svc/wizard-words-run 8501:8501    # then open http://localhost:8501
 ```
 
+The Deployment and Service are named `<serviceName>-run` (the wizard's chain has one deploy step called `run`).
 The trigger is fired by the wizard itself (`fireOnCreate`); nothing to annotate. With an `ingressName` the app is
 also reachable at `https://<ingressName>.<ingress.hostSuffix>` (needs DNS/hosts entry and, on a TLS-enabled
 cluster, a certificate).
