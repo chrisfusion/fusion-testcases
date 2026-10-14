@@ -1,0 +1,7 @@
+# Dependencies of the app, installed into the venv pack by fusion-forge (Python 3.12).
+# Same rules as in ../template-python-venv/requirements.txt: every line pinned with `==`,
+# no pip options, no VCS/URL dependencies. Only the dashboard needs them; the two
+# batch steps (extract.py, count.py) use the standard library only. One pack serves
+# all three entrypoints.
+streamlit==1.65.0
+pandas==3.0.6

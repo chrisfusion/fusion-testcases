@@ -1,0 +1,31 @@
+# Read by fusion-forge (app build). name/version/builderImage come from here,
+# not from the API call.
+
+# Artifact name in fusion-index -> `app.template-python-app-etl-shared-storage`.
+name: template-python-app-etl-shared-storage
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# Multi-entrypoint build: `files: []` = auto-discover every top-level *.py file
+# (extract.py, count.py, dashboard.py) and upload each as a loose file next to the
+# venv pack. ONE build, ONE venv pack, three processes. main.py is not required.
+files: []
+
+# NO `runner:` block, on purpose. This artifact is used by two kinds of steps:
+#   * extract.py, count.py -> batch jobs     (runner type `python`)
+#   * dashboard.py         -> web app        (runner type `streamlit`)
+# Anything the metadata sets is applied AFTER the step's own settings and wins, so a
+# fixed runner.type / runner.args.ENTRYPOINT here would break one of the two kinds.
+# Instead each step sets its own WEAVE_RUNNER_TYPE and ENTRYPOINT (see README.md).
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "500Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
