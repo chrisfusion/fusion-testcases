@@ -1,0 +1,6 @@
+# Dependencies of the app, installed into the venv pack by fusion-forge (Python 3.12).
+# Same rules as in ../template-python-venv/requirements.txt: every line pinned with `==`,
+# no pip options, no VCS/URL dependencies. Direct dependencies only; pip resolves the
+# rest. `streamlit` is what the runner type `streamlit` starts, so it is required.
+streamlit==1.65.0
+pandas==3.0.6

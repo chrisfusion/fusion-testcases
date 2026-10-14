@@ -1,0 +1,41 @@
+# Read by fusion-forge (app build, started by the wizard's GitWatcher step).
+# name/version/builderImage come from here, not from the wizard form.
+
+# Artifact name in fusion-index -> `app.template-wizard-service-streamlit`.
+name: template-wizard-service-streamlit
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# Ship the non-.py files of the repo root (here: kafka_excerpt.txt) inside the venv
+# as the importable package `_root_assets`. Without this flag they are NOT shipped.
+# Excluded automatically: requirements.txt, metadata.yaml, dotfiles, symlinks.
+# Every other non-.py root file (the READMEs) is bundled too - expected, harmless.
+rootAssets: true
+
+# How the service is started by fusion-runner.
+runner:
+  # `streamlit` = the runner starts `python -m streamlit run <ENTRYPOINT>` headless
+  # on 0.0.0.0 and the given port. A long-running web service -> a Deploy step,
+  # which is what the "Git Python service" wizard creates.
+  type: streamlit
+  # Port the app listens on. The wizard form has a `port` field (default 8501) that
+  # sets the service's port: keep the two identical.
+  port: 8501
+  args:
+    # Script handed to `streamlit run`: main.py in the repo root.
+    ENTRYPOINT: "main.py"
+
+# Optional: serve under a URL path segment instead of "/" (see template-python-app-streamlit).
+# The wizard's `ingressName` is something else: it sets the HOSTNAME, not a path.
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "500Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
