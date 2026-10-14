@@ -1,0 +1,34 @@
+# Read by fusion-forge (app build). name/version/builderImage come from here,
+# not from the API call.
+
+# Artifact name in fusion-index -> `app.template-python-app-multi-entrypoint`.
+name: template-python-app-multi-entrypoint
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# Multi-entrypoint build: `files: []` (present, but empty) = auto-discover every
+# top-level *.py file (count.py, top.py, longest.py) and upload each as a loose
+# file next to the venv pack on this artifact version. main.py is NOT required.
+# Without the key the forge expects exactly one main.py (legacy mode, see the
+# other app templates). To pick files by hand: `files: [count.py, top.py]`.
+files: []
+
+runner:
+  # `python` = run the entrypoint directly, no web server, no port, no ingress.
+  type: python
+  # NO `args: ENTRYPOINT: ...` here, on purpose. Every key under runner.args is
+  # appended to the container env AFTER the step's own env overrides and wins on
+  # duplicates - a fixed ENTRYPOINT here would silently beat the per-step
+  # ENTRYPOINT that selects which of the three scripts runs.
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"

@@ -1,0 +1,4 @@
+Fusion builds your Python code into a venv pack.
+The pack is stored in the index and started by the runner.
+This text file is an asset: it is shipped with the application.
+Assets in the repository root need rootAssets set to true.

@@ -23,5 +23,6 @@ Successor to `../testcases_v2/`, organized as **templates** rather than test fix
 | [`template-python-app-no-assets/`](template-python-app-no-assets/) | Same app with no data files at all: the input text is hardcoded in `main.py`. Includes a comparison of all three app templates. |
 | [`template-python-app-inject-variables/`](template-python-app-inject-variables/) | The eight ways fusion injects env vars, secrets and tokens (file or env) into a job; Spectra settings plus reference manifests. |
 | [`template-python-app-external-auth/`](template-python-app-external-auth/) | Only `externalAuthRef`: a short-lived operator-minted token, read from file (preferred) or env var (second option). |
+| [`template-python-app-multi-entrypoint/`](template-python-app-multi-entrypoint/) | Three entrypoints from one build, no `main.py` (`files: []`); each chain step picks its script via `ENTRYPOINT`. Shared code and an assets package. |
 
 More templates (app builds, git builds, chains, triggers) will be added step by step.
