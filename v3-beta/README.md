@@ -21,5 +21,7 @@ Successor to `../testcases_v2/`, organized as **templates** rather than test fix
 | [`template-python-app-root-asset/`](template-python-app-root-asset/) | Single generic Python app via the GitOps app build: `metadata.yaml`, pinned `requirements.txt`, a thin `main.py`, code in a sub-package, and a root text file shipped as an asset (`rootAssets`). |
 | [`template-python-app-assets-dir/`](template-python-app-assets-dir/) | Same app as `template-python-app-root-asset`, but the input file lives in an own `assets/` package and `rootAssets` is false. Explains the difference and when to prefer which. |
 | [`template-python-app-no-assets/`](template-python-app-no-assets/) | Same app with no data files at all: the input text is hardcoded in `main.py`. Includes a comparison of all three app templates. |
+| [`template-python-app-inject-variables/`](template-python-app-inject-variables/) | The eight ways fusion injects env vars, secrets and tokens (file or env) into a job; Spectra settings plus reference manifests. |
+| [`template-python-app-external-auth/`](template-python-app-external-auth/) | Only `externalAuthRef`: a short-lived operator-minted token, read from file (preferred) or env var (second option). |
 
 More templates (app builds, git builds, chains, triggers) will be added step by step.

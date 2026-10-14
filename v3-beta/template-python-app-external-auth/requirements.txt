@@ -1,0 +1,4 @@
+# tabulate: print the report as a table, humanize: "expires in 5 minutes".
+# Same rules as in ../template-python-venv/requirements.txt: pinned with `==`.
+tabulate==0.10.0
+humanize==4.16.0

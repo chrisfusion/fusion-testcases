@@ -1,0 +1,34 @@
+# Read by fusion-forge (app build). name/version/builderImage come from here,
+# not from the API call.
+
+# Artifact name in fusion-index -> `app.template-python-app-inject-variables`.
+name: template-python-app-inject-variables
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# How the app is started by fusion-runner.
+runner:
+  # `python` = run the entrypoint directly, no web server, no port, no ingress
+  # -> a one-shot application, suited for a Job step.
+  type: python
+  args:
+    # Script that is executed: main.py in the repo root.
+    ENTRYPOINT: "main.py"
+    # INJECTION WAY 1: every key under runner.args becomes a plain environment
+    # variable in the container (not secret! this file is public in the artifact).
+    # Caution: runner.args are appended AFTER the template env and the step's
+    # envOverrides, so on a duplicate name this value wins. Do not put anything
+    # here that a step should be able to override.
+    GREETING: "hello from metadata.yaml"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"

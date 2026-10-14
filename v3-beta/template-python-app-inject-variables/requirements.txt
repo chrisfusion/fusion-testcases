@@ -1,0 +1,3 @@
+# Only used to print the report as a table. Same rules as in
+# ../template-python-venv/requirements.txt: pinned with `==`, no pip options.
+tabulate==0.10.0
