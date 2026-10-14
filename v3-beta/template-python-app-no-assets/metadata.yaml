@@ -1,8 +1,8 @@
 # Read by fusion-forge (app build). name/version/builderImage come from here,
 # not from the API call.
 
-# Artifact name in fusion-index -> `app.template-python-app`.
-name: template-python-app
+# Artifact name in fusion-index -> `app.template-python-app-no-assets`.
+name: template-python-app-no-assets
 # Bump this to publish a new artifact version (an existing version is not rebuilt).
 version: 0.1.0
 maintainer: some.maintainer@example.local
@@ -10,10 +10,8 @@ maintainer: some.maintainer@example.local
 # Image the build runs in; python3.12 = Python 3.12 venv.
 builderImage: python3.12
 
-# Bundle the non-.py files in the repo root (here: words.txt) into the importable
-# package `_root_assets` inside the venv. Without this flag words.txt is NOT shipped.
-# Excluded automatically: requirements.txt, metadata.yaml, dotfiles, symlinks.
-rootAssets: true
+# No `rootAssets` key: this app ships no data files at all (the input text is
+# hardcoded in main.py), so the default (off) is exactly what we want.
 
 # How the app is started by fusion-runner.
 runner:
