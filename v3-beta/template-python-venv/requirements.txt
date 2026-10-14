@@ -1,0 +1,19 @@
+# template-python-venv — the simplest fusion-forge build: a pinned requirements.txt.
+#
+# fusion-forge reads this file, builds a venv with Python 3.12 and registers it
+# in fusion-index as the artifact `venv.<name>` (name/version are given at submit
+# time, NOT in this file — see README.md).
+#
+# Rules for a good template:
+#   * Pin every package with `==` so rebuilds are reproducible.
+#   * List only direct dependencies; pip resolves transitive ones at build time.
+#   * Lines starting with `#` are plain pip comments and are ignored by the build.
+#
+# Replace the three packages below with your own.
+
+# HTTP client
+requests==2.34.2
+# Date/time parsing helpers
+python-dateutil==2.9.0.post0
+# Progress bars
+tqdm==4.70.1
