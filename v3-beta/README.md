@@ -26,5 +26,7 @@ Successor to `../testcases_v2/`, organized as **templates** rather than test fix
 | [`template-python-app-multi-entrypoint/`](template-python-app-multi-entrypoint/) | Three entrypoints from one build, no `main.py` (`files: []`); each chain step picks its script via `ENTRYPOINT`. Shared code and an assets package. |
 | [`template-python-app-streamlit/`](template-python-app-streamlit/) | A Streamlit web app (Deploy step): the word-count example as charts, with banner picture, favicon, SVG icons and CSS from an `assets/` package. |
 | [`template-python-app-etl-shared-storage/`](template-python-app-etl-shared-storage/) | One build, three processes: extract → count (jobs) → Streamlit dashboard, linked by the chain's shared storage. Data: Kafka's *Die Verwandlung* (shipped as asset, no internet needed). |
+| [`template-wizard-job-single-entrypoint/`](template-wizard-job-single-entrypoint/) | Repository for Spectra's Git Python job wizard: one `main.py`, a root asset (Kafka excerpt) and a short-lived token read from a file. |
+| [`template-wizard-job-multi-entrypoint/`](template-wizard-job-multi-entrypoint/) | Same wizard, three entrypoints and no `main.py` (`files: []`), root asset; one trigger per entrypoint. |
 
 More templates (app builds, git builds, chains, triggers) will be added step by step.

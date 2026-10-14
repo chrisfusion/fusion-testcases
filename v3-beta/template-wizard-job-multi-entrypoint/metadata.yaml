@@ -1,0 +1,37 @@
+# Read by fusion-forge (app build, started by the wizard's GitWatcher step).
+# name/version/builderImage come from here, not from the wizard form.
+
+# Artifact name in fusion-index -> `app.template-wizard-job-multi-entrypoint`.
+name: template-wizard-job-multi-entrypoint
+# Bump this to publish a new artifact version (an existing version is not rebuilt).
+version: 0.1.0
+maintainer: some.maintainer@example.local
+
+# Image the build runs in; python3.12 = Python 3.12 venv.
+builderImage: python3.12
+
+# Multi-entrypoint build: `files: []` = auto-discover every top-level *.py file
+# (count.py, top.py, longest.py) and upload each as a loose file next to the venv
+# pack. main.py is NOT required (and does not exist here).
+files: []
+
+# Ship the non-.py files of the repo root (here: kafka_excerpt.txt) inside the venv
+# as the importable package `_root_assets`. Root *.py files are unaffected: they stay
+# the entrypoints. Every other non-.py root file (the READMEs) is bundled too.
+rootAssets: true
+
+runner:
+  # `python` = run the entrypoint directly, no web server, no port -> a Job step.
+  type: python
+  # NO `args: ENTRYPOINT: ...` here, on purpose. The wizard creates one trigger per
+  # entrypoint listed in its form, each overriding ENTRYPOINT for its own runs.
+  # Anything under runner.args is applied after that and would win, so a fixed
+  # ENTRYPOINT here would make every trigger run the same script.
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"
