@@ -18,5 +18,6 @@ Successor to `../testcases_v2/`, organized as **templates** rather than test fix
 | Template | Demonstrates |
 |---|---|
 | [`template-python-venv/`](template-python-venv/) | Simplest build: only a pinned `requirements.txt`. The forge builds a Python 3.12 venv from it and uploads it to fusion-index as `venv.<name>`. Explains the forge's requirements rules. |
+| [`template-python-app/`](template-python-app/) | Single generic Python app via the GitOps app build: `metadata.yaml`, pinned `requirements.txt`, a thin `main.py`, code in a sub-package, and a root text file shipped as an asset (`rootAssets`). |
 
 More templates (app builds, git builds, chains, triggers) will be added step by step.
