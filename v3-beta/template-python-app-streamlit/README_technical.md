@@ -26,11 +26,11 @@ kubectl apply --dry-run=server -f app.yaml
 kubectl apply -f app.yaml
 kubectl annotate weavetrigger streamlit-wordcount-trigger fusion-platform.io/fire=true --overwrite -n fusion
 kubectl get pods -n fusion -w                       # wait for the app pod to be Ready
-kubectl port-forward svc/<service-name> 8501:8501 -n fusion
+kubectl port-forward svc/streamlit-wordcount-app 8501:8501 -n fusion
 # open http://localhost:8501
 ```
 
-The service name is the chain-owned name of the Deploy step: `kubectl get svc -n fusion | grep streamlit-wordcount`.
+The service is named `<chain>-<step>`, here `streamlit-wordcount-app` (check with `kubectl get svc -n fusion | grep streamlit-wordcount`).
 
 ## Internals
 
