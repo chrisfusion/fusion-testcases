@@ -1,6 +1,14 @@
 # PLATFORM side, ingress-nginx clusters: extra values for the fusion-weave Helm release
 # (helm upgrade ... -f helm-values-nginx.yaml, or the HelmRelease's values). Not applied by
 # the gitops Kustomization, which may create only WeaveApps.
+# Writable emptyDirs under readOnlyRootFilesystem: true. writablePaths go to every codeSource
+# workload; runnerWritablePaths are added to WeaveApps by metadata.yaml runner.type. An app
+# appends its own with spec.writablePaths.
+codeSource:
+  writablePaths: [/tmp, /home/nonroot, /weave-work]
+  runnerWritablePaths:
+    streamlit: [/home/runner/.streamlit]
+
 ingress:
   hostSuffix: fusion.local
   tls:

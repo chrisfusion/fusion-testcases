@@ -72,6 +72,28 @@ Ingress until the Ingress is recreated (e.g. delete the Ingress, the operator re
 A value is replaced as a whole: `traefik.ingress.kubernetes.io/router.middlewares` set by an app replaces the
 runner-type value instead of appending to it — list every middleware the app needs (see `streamlit-traefik.yaml`).
 
+## Writable folders
+
+`spec.writablePaths[]` (`mountPath`, optional `sizeLimit`, optional `medium: Memory`) becomes one emptyDir per
+path, mounted into the app container and the `code-loader` init container. Layers, in order:
+
+1. operator `WRITABLE_PATHS` (Helm `codeSource.writablePaths`) — only for `codeSource` apps,
+2. `RUNNER_WRITABLE_PATHS` (Helm `codeSource.runnerWritablePaths[<metadata.yaml runner.type>]`) — only for
+   `codeSource` apps,
+3. the app's `spec.writablePaths` — any app, with or without `codeSource`.
+
+A path already mounted from an emptyDir only takes `sizeLimit`/`medium` from a later entry; nothing is
+duplicated or removed. Relative paths, `/`, duplicates and paths used by `spec.volumes` or the code mount
+(`/weave-code`) make the app `Invalid`.
+
+```bash
+kubectl get deploy streamlit-app -n fusion -o json | jq -c '[.spec.template.spec.volumes[] | {name, emptyDir}]'
+kubectl exec -n fusion deploy/streamlit-app -c service -- touch /x    # Read-only file system
+```
+
+The fusion runner image runs as uid 1000 with `HOME=/home/runner` (not `/home/nonroot`, which the default
+`WRITABLE_PATHS` lists).
+
 ## Traefik Middlewares
 
 The fusion-weave chart renders `ingress.traefik.middlewares.<name>` as `Middleware/<name>` in the release namespace,

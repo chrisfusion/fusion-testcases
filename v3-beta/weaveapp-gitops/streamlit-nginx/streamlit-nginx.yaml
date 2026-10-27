@@ -14,6 +14,16 @@ spec:
   codeSource:
     artifactName: app.template-wizard-service-streamlit
     tag: stable
+  # Read-only root filesystem: the runner unpacks the venv to /tmp/venv, so /tmp must be a
+  # writable emptyDir. sizeLimit caps it (the pod is evicted beyond it). The platform may
+  # already give every runner /tmp (WRITABLE_PATHS / codeSource.runnerWritablePaths); listing
+  # it again here is harmless and only sets the sizeLimit.
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  writablePaths:
+    - mountPath: /tmp
+      sizeLimit: 1Gi
   service:
     # Two pods: a Streamlit session lives in ONE pod (websocket + server-side state), so the
     # browser must stick to it -> the affinity annotations below.

@@ -16,6 +16,16 @@ spec:
     artifactName: app.template-wizard-job-single-entrypoint
     # A tag, not a version: every execution loads whatever version `stable` points to.
     tag: stable
+  # Read-only root filesystem: the runner unpacks the venv to /tmp/venv, so /tmp must be a
+  # writable emptyDir. sizeLimit caps it (the pod is evicted beyond it). The platform may
+  # already give every runner /tmp (WRITABLE_PATHS / codeSource.runnerWritablePaths); listing
+  # it again here is harmless and only sets the sizeLimit.
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  writablePaths:
+    - mountPath: /tmp
+      sizeLimit: 1Gi
   # The template reads a short-lived token from a file; ext-auth-demo-sa must be on the
   # operator's EXTERNAL_AUTH_SERVICE_ACCOUNTS allowlist. A new token is minted per execution.
   externalAuthRef:

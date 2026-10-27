@@ -13,6 +13,22 @@ spec:
   codeSource:
     artifactName: app.template-wizard-service-streamlit
     tag: stable                      # moving the tag restarts the pods with the new version
+  # Read-only root filesystem: the runner unpacks the venv to /tmp/venv, so /tmp must be a
+  # writable emptyDir. sizeLimit caps it (the pod is evicted beyond it). The platform may
+  # already give every runner /tmp (WRITABLE_PATHS / codeSource.runnerWritablePaths); listing
+  # it again here is harmless and only sets the sizeLimit.
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  writablePaths:
+    - mountPath: /tmp
+      sizeLimit: 1Gi
+    # An app-specific extra path, appended by the app: Streamlit's per-user state directory
+    # (HOME=/home/runner in the runner image). This app starts without it (only /tmp is
+    # required); add such entries when your app or its libraries write somewhere else.
+    - mountPath: /home/runner/.streamlit
+      sizeLimit: 10Mi
+      medium: Memory          # tmpfs: tiny, and counts against the memory limit
   service:
     replicas: 1
     readinessProbe:

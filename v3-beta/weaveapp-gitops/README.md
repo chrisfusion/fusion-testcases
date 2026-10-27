@@ -28,7 +28,24 @@ top-level [`kustomization.yaml`](kustomization.yaml) applies `apps/` plus `strea
 - **Images need a fixed tag** (`nginx:1.27`, not `nginx` or `nginx:latest`) and must be on the cluster's allowed list.
   With a forge build (`codeSource`) the `image` is the runner image.
 - **Schedules have six fields, seconds first:** `"0 0 2 * * *"` is 02:00:00 every day.
+- **Read-only root filesystem:** every app here runs with `readOnlyRootFilesystem: true`. Directories the app
+  must write to are listed under `writablePaths` (each becomes an empty, writable folder; `sizeLimit` caps it).
+  The platform can add some for every app of a runner type; you append your own.
 - **Run a job now:** set the annotation `fusion-platform.io/fire=<entrypoint>` on the app (in Spectra: *Run*).
+
+## Writable folders (read-only root filesystem)
+
+What each example needs, found by starting it with no writable folder at all:
+
+| App | Writable folders | Without them |
+|---|---|---|
+| `image-site` (nginx) | `/var/cache/nginx`, `/var/run` | `mkdir() "/var/cache/nginx/client_temp" failed (Read-only file system)` |
+| `image-job` (busybox) | none | — |
+| Python jobs, Streamlit (fusion runner) | `/tmp` (the venv is unpacked to `/tmp/venv`) | `extract venv: … Read-only file system` |
+
+Three layers, nothing is ever removed: the cluster-wide list for forge builds, the list for the runner type
+(platform team), and the app's own `writablePaths`. If a folder is already writable, an app entry only changes
+its `sizeLimit`/`medium`.
 
 ## Tuning the Ingress (nginx and Traefik)
 
