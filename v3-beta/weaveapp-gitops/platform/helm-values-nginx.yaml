@@ -1,0 +1,29 @@
+# PLATFORM side, ingress-nginx clusters: extra values for the fusion-weave Helm release
+# (helm upgrade ... -f helm-values-nginx.yaml, or the HelmRelease's values). Not applied by
+# the gitops Kustomization, which may create only WeaveApps.
+ingress:
+  hostSuffix: fusion.local
+  tls:
+    enabled: true
+  # Every WeaveApp whose artifact has runner.type=streamlit gets these, without a single line
+  # in the app repo. An app's own spec.service.ingressAnnotations override them per key.
+  runnerAnnotations:
+    streamlit:
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  # Left empty on nginx: without the Traefik CRD the chart renders no Middlewares anyway.
+  traefik:
+    middlewares: {}
+
+# Forwarded headers are a CONTROLLER setting on nginx, not an Ingress one. Only needed when a
+# load balancer in front of ingress-nginx already sets X-Forwarded-* (e.g. TLS ends at the LB)
+# and the apps should see the original client IP/proto. ingress-nginx Helm values:
+#
+#   controller:
+#     config:
+#       use-forwarded-headers: "true"
+#       # trust only the LB, not every client:
+#       proxy-real-ip-cidr: "10.0.0.0/8"
+#
+# Annotation snippets (configuration-snippet with proxy_set_header) are off by default in
+# current ingress-nginx for security reasons; do not rely on them.

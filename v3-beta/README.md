@@ -29,5 +29,6 @@ Successor to `../testcases_v2/`, organized as **templates** rather than test fix
 | [`template-wizard-job-single-entrypoint/`](template-wizard-job-single-entrypoint/) | Repository for Spectra's Git Python job wizard: one `main.py`, a root asset (Kafka excerpt) and a short-lived token read from a file. |
 | [`template-wizard-job-multi-entrypoint/`](template-wizard-job-multi-entrypoint/) | Same wizard, three entrypoints and no `main.py` (`files: []`), root asset; one trigger per entrypoint. |
 | [`template-wizard-service-streamlit/`](template-wizard-service-streamlit/) | Repository for Spectra's Git Python service wizard: a small Streamlit word counter (Deploy step) with the Kafka excerpt as root asset. |
+| [`weaveapp-gitops/`](weaveapp-gitops/) | Flux-applied WeaveApps (image service/job, Python jobs, Streamlit) plus Streamlit Ingress tuning for ingress-nginx and Traefik: oauth2-proxy login, forwarded headers, timeouts, upload limit. |
 
 More templates (app builds, git builds, chains, triggers) will be added step by step.

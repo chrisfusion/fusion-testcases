@@ -1,0 +1,58 @@
+# PLATFORM side, Traefik clusters: extra values for the fusion-weave Helm release.
+# The chart renders each ingress.traefik.middlewares entry as a traefik.io/v1alpha1
+# Middleware in the release namespace (here: fusion), so the WeaveApp annotation
+#   traefik.ingress.kubernetes.io/router.middlewares: fusion-<name>@kubernetescrd
+# finds it. Rendered only when the cluster has the Middleware CRD.
+ingress:
+  hostSuffix: fusion.local
+  tls:
+    enabled: true
+
+  runnerAnnotations:
+    streamlit:
+      # Default for every Streamlit app that does not set its own router.middlewares.
+      traefik.ingress.kubernetes.io/router.middlewares: "fusion-forwarded-https@kubernetescrd"
+
+  traefik:
+    middlewares:
+      # Login = nginx auth-url + auth-signin + auth-response-headers.
+      # Traefik has no "sign-in URL on 401": oauth2-proxy runs with --upstream=static://202
+      # and --reverse-proxy, so for a request without a session it answers with the redirect
+      # to Keycloak itself (see oauth2-proxy-values.yaml). Note the address is "/", not
+      # /oauth2/auth (that one only says 401 and the browser would see an error page).
+      oauth2-forward-auth:
+        forwardAuth:
+          address: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/"
+          # Pass Traefik's X-Forwarded-Host/-Uri on, oauth2-proxy builds the return URL from them.
+          trustForwardHeader: true
+          # Copied onto the request to the app, as nginx's auth-response-headers.
+          authResponseHeaders:
+            - X-Auth-Request-User
+            - X-Auth-Request-Email
+            - X-Auth-Request-Groups
+
+      # X-Forwarded-* per route. Traefik sets them by default; this pins proto/port when TLS
+      # ends at a load balancer in front and Traefik itself only sees http. (On nginx this is
+      # the controller-wide use-forwarded-headers instead.) Trusting incoming X-Forwarded-*
+      # from that LB is Traefik static config:
+      #   entryPoints.websecure.forwardedHeaders.trustedIPs: ["10.0.0.0/8"]
+      forwarded-https:
+        headers:
+          customRequestHeaders:
+            X-Forwarded-Proto: "https"
+            X-Forwarded-Port: "443"
+          # Response security headers, here because Traefik has a per-route place for them.
+          stsSeconds: 31536000
+          contentTypeNosniff: true
+
+      # = nginx proxy-body-size: "50m"
+      upload-limit:
+        buffering:
+          maxRequestBodyBytes: 52428800
+
+      # Only for apps served under a path (e.g. /words) that build absolute URLs:
+      # = nginx x-forwarded-prefix.
+      # words-prefix:
+      #   headers:
+      #     customRequestHeaders:
+      #       X-Forwarded-Prefix: "/words"

@@ -1,0 +1,29 @@
+# Python job from a fusion-forge build, one entrypoint.
+# Code: ../template-wizard-job-single-entrypoint (artifact app.template-wizard-job-single-entrypoint).
+# metadata.yaml there says runner.type=python and ENTRYPOINT=main.py, so nothing about the
+# script is repeated here.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: python-job-single
+  namespace: fusion
+spec:
+  type: job
+  # With codeSource, `image` is the RUNNER image that executes the loaded artifact.
+  # It must be on ALLOWED_IMAGE_PREFIXES when that list is set.
+  image: fusion-runner-python312:local
+  codeSource:
+    artifactName: app.template-wizard-job-single-entrypoint
+    # A tag, not a version: every execution loads whatever version `stable` points to.
+    tag: stable
+  # The template reads a short-lived token from a file; ext-auth-demo-sa must be on the
+  # operator's EXTERNAL_AUTH_SERVICE_ACCOUNTS allowlist. A new token is minted per execution.
+  externalAuthRef:
+    mode: serviceAccount
+    name: ext-auth-demo-sa
+  # false = token only as a file, not also as the WEAVE_EXTERNAL_AUTH_TOKEN env var.
+  unsafeEnvironmentInjector: false
+  entrypoints:
+    # No command: the runner image's own entrypoint starts metadata.yaml's ENTRYPOINT.
+    - name: run
+      schedule: "0 30 6 * * 1-5"   # weekdays 06:30:00

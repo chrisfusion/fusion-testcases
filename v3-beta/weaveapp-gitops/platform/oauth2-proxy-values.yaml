@@ -1,0 +1,42 @@
+# PLATFORM side: one oauth2-proxy for every protected app, against the Keycloak realm
+# `fusion`. Values for the community oauth2-proxy Helm chart, installed as release
+# `oauth2-proxy` in namespace `oauth2-proxy` (the Service address both streamlit examples use:
+# http://oauth2-proxy.oauth2-proxy.svc.cluster.local, port 80).
+#
+# Keycloak: create a confidential client `oauth2-proxy` in realm `fusion` with the redirect URI
+#   https://auth.fusion.local/oauth2/callback
+# and a "groups" mapper if X-Auth-Request-Groups should be filled.
+config:
+  clientID: oauth2-proxy
+  # Put the real values in a Secret (config.existingSecret) instead of here.
+  clientSecret: "<from keycloak>"
+  cookieSecret: "<openssl rand -base64 32 | tr -- '+/' '-_'>"
+
+extraArgs:
+  provider: keycloak-oidc
+  oidc-issuer-url: "http://keycloak.default.svc.cluster.local:8080/realms/fusion"
+  # One login for all apps under *.fusion.local.
+  cookie-domain: ".fusion.local"
+  whitelist-domain: ".fusion.local"
+  redirect-url: "https://auth.fusion.local/oauth2/callback"
+  email-domain: "*"
+  # Fill X-Auth-Request-User/-Email/-Groups (read by both examples).
+  set-xauthrequest: true
+  # Read X-Forwarded-Host/-Uri/-Proto from the ingress controller to build the return URL.
+  reverse-proxy: true
+  # Traefik forwardAuth on "/": answer 202 when logged in, redirect to Keycloak otherwise.
+  # nginx uses /oauth2/auth and is unaffected by this.
+  upstream: "static://202"
+  skip-provider-button: true
+
+# The login host itself (auth.fusion.local/oauth2/...). Set className to nginx or traefik.
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - auth.fusion.local
+  path: /oauth2
+  pathType: Prefix
+  tls:
+    - hosts: [auth.fusion.local]
+      secretName: auth-fusion-local-tls

@@ -1,0 +1,30 @@
+# PLATFORM side: Flux source + Kustomization that applies this folder.
+# Both must live in the fusion-weave release namespace (fusion): Flux looks up
+# serviceAccountName in the Kustomization's own namespace.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: fusion-testcases
+  namespace: fusion
+spec:
+  interval: 1m
+  url: https://<your-git-host>/<org>/fusion-testcases.git
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: weaveapp-gitops
+  namespace: fusion
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: fusion-testcases
+  path: ./v3-beta/weaveapp-gitops
+  # Apply as the restricted gitops account: WeaveApps only, nothing else.
+  serviceAccountName: fusion-weave-gitops
+  targetNamespace: fusion
+  # Removing a file from git deletes the WeaveApp, and with it everything it owns.
+  prune: true

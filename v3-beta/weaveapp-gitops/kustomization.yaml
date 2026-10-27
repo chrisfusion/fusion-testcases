@@ -1,0 +1,8 @@
+# Entry point for Flux (path ./v3-beta/weaveapp-gitops): the common apps plus ONE
+# controller-specific Streamlit. Swap the second line on a Traefik cluster.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - apps
+  - streamlit-nginx
+  # - streamlit-traefik

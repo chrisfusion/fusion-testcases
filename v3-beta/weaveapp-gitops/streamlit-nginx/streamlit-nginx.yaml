@@ -1,0 +1,65 @@
+# Streamlit behind ingress-nginx: login via oauth2-proxy (Keycloak), identity headers to the
+# app, websocket-friendly timeouts, upload limit, sticky sessions.
+# Same app as ../apps/streamlit.yaml; the Traefik twin is ../streamlit-traefik.
+# Prerequisites (platform side, NOT in this repo): ../platform/oauth2-proxy-values.yaml and,
+# optionally, ../platform/helm-values-nginx.yaml.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: streamlit-nginx
+  namespace: fusion
+spec:
+  type: service
+  image: fusion-runner-python312:local
+  codeSource:
+    artifactName: app.template-wizard-service-streamlit
+    tag: stable
+  service:
+    # Two pods: a Streamlit session lives in ONE pod (websocket + server-side state), so the
+    # browser must stick to it -> the affinity annotations below.
+    replicas: 2
+    readinessProbe:
+      httpGet: {path: /_stcore/health, port: 8501}
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 6
+    # Full ingress block (instead of the ingressName shorthand) to pin the controller class.
+    ingress:
+      ingressClassName: nginx
+      rules:
+        - name: words-secure       # -> words-secure.<ingress.hostSuffix>
+          path: /
+          pathType: Prefix
+    # Added to the Ingress on top of the instance-wide ingress.annotations and
+    # ingress.runnerAnnotations.streamlit; on the same key this map wins.
+    ingressAnnotations:
+      # --- login (oauth2-proxy in front of Keycloak) ---------------------------------------
+      # nginx asks oauth2-proxy on every request: 2xx = let through, 401 = not logged in.
+      nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth"
+      # Where a 401 sends the browser; rd brings it back to the page it wanted.
+      nginx.ingress.kubernetes.io/auth-signin: "https://auth.fusion.local/oauth2/start?rd=https://$host$escaped_request_uri"
+      # oauth2-proxy's answer headers copied onto the request to the app (needs
+      # --set-xauthrequest): the app can read who is logged in.
+      nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Groups"
+
+      # --- forwarded headers -----------------------------------------------------------------
+      # ingress-nginx always sends X-Forwarded-For/-Host/-Proto/-Port to the app. Nothing to
+      # switch on per app. Whether it TRUSTS such headers from a load balancer in front is
+      # controller-wide (use-forwarded-headers, see ../platform/helm-values-nginx.yaml).
+      # X-Forwarded-Prefix is only useful when the app is served under a path, e.g. /words:
+      # nginx.ingress.kubernetes.io/x-forwarded-prefix: "/words"
+
+      # --- websockets, uploads, https --------------------------------------------------------
+      # Streamlit keeps a websocket open; nginx's default 60 s would cut idle sessions.
+      # (Also in runnerAnnotations.streamlit of helm-values-nginx.yaml; repeated so this file
+      # works without the platform values.)
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      # st.file_uploader: default nginx limit is 1m.
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+      # --- sticky sessions (replicas > 1) ----------------------------------------------------
+      nginx.ingress.kubernetes.io/affinity: "cookie"
+      nginx.ingress.kubernetes.io/session-cookie-name: "streamlit-route"
+      nginx.ingress.kubernetes.io/session-cookie-max-age: "28800"   # 8 h

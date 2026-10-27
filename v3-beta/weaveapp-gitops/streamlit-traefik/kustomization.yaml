@@ -1,0 +1,6 @@
+# Streamlit tuned for Traefik. Apply on Traefik clusters only, after the Middlewares from
+# ../platform/helm-values-traefik.yaml exist (a missing Middleware disables the route).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - streamlit-traefik.yaml

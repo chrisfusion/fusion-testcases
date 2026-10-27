@@ -1,0 +1,33 @@
+# Image only, type=job: one container image, two entrypoints.
+# Every execution is a batch Job created by the operator (not a CronJob) and owned by this
+# WeaveApp; the result of the last 20 executions stays in status.executions.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: image-job
+  namespace: fusion
+spec:
+  type: job
+  image: busybox:1.36
+  # App-level command: used by every entrypoint that does not set its own.
+  command: ["sh", "-c", "echo hello from $APP_GREETING; date"]
+  env:
+    - name: APP_GREETING
+      value: image-job
+  resources:
+    requests: {cpu: 10m, memory: 16Mi}
+    limits: {cpu: 100m, memory: 64Mi}
+  activeDeadlineSeconds: 300    # per execution; the Job is killed after 5 minutes
+  executionTTLSeconds: 3600     # finished Jobs and their logs are kept 1 hour (default 24h)
+  entrypoints:
+    # Scheduled: 6-field cron, SECONDS FIRST -> every day at 02:00:00.
+    - name: nightly
+      schedule: "0 0 2 * * *"
+    # On demand only (no schedule): fire it with the annotation
+    #   fusion-platform.io/fire=adhoc
+    # Own command and env, merged over the app-level values (the entrypoint wins).
+    - name: adhoc
+      command: ["sh", "-c", "echo adhoc run, mode=$MODE"]
+      env:
+        - name: MODE
+          value: manual

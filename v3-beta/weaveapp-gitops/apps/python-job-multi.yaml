@@ -1,0 +1,30 @@
+# Python job from a fusion-forge build, three entrypoints from ONE build.
+# Code: ../template-wizard-job-multi-entrypoint (count.py, top.py, longest.py, no main.py).
+# Its metadata.yaml deliberately has no runner.args.ENTRYPOINT: runner.args are applied
+# after the entrypoint env and would win, so every entrypoint would run the same script.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: python-job-multi
+  namespace: fusion
+spec:
+  type: job
+  image: fusion-runner-python312:local
+  codeSource:
+    artifactName: app.template-wizard-job-multi-entrypoint
+    tag: stable
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 300m, memory: 256Mi}
+  # Each entrypoint picks its script via ENTRYPOINT, read by the python runner.
+  entrypoints:
+    - name: count
+      schedule: "0 0 * * * *"      # every full hour
+      env:
+        - {name: ENTRYPOINT, value: count.py}
+    - name: top                      # on demand: fusion-platform.io/fire=top
+      env:
+        - {name: ENTRYPOINT, value: top.py}
+    - name: longest                  # on demand: fusion-platform.io/fire=longest
+      env:
+        - {name: ENTRYPOINT, value: longest.py}

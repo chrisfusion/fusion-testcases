@@ -1,0 +1,10 @@
+# The common apps. Only WeaveApps: the Flux account fusion-weave-gitops may not create
+# anything else (no Deployments, Secrets, Middlewares, ...).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - image-site.yaml
+  - image-job.yaml
+  - python-job-single.yaml
+  - python-job-multi.yaml
+  - streamlit.yaml

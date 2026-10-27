@@ -1,0 +1,25 @@
+# Streamlit service from a fusion-forge build, no ingress tuning.
+# Code: ../template-wizard-service-streamlit (runner.type=streamlit, runner.port=8501).
+# The port comes from metadata.yaml, so service.ports can be left out.
+# Controller-specific tuning lives in ../streamlit-nginx and ../streamlit-traefik.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: streamlit
+  namespace: fusion
+spec:
+  type: service
+  image: fusion-runner-python312:local
+  codeSource:
+    artifactName: app.template-wizard-service-streamlit
+    tag: stable                      # moving the tag restarts the pods with the new version
+  service:
+    replicas: 1
+    readinessProbe:
+      httpGet: {path: /_stcore/health, port: 8501}
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 6
+    # -> words.<ingress.hostSuffix>. Instance-wide ingress.annotations and, because the
+    # artifact's runner.type is streamlit, ingress.runnerAnnotations.streamlit still apply.
+    ingressName: words

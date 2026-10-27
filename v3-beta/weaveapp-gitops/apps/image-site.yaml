@@ -1,0 +1,29 @@
+# Image only, type=service: a plain container image, no fusion-forge build, no codeSource.
+# The operator creates a Deployment, a Service and an Ingress, all owned by this WeaveApp:
+# delete the WeaveApp (or remove this file from git) and all three are gone.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: image-site
+  namespace: fusion
+spec:
+  type: service                 # immutable after creation
+  # An explicit tag is required when ALLOWED_IMAGE_PREFIXES is set (no `latest`, no untagged).
+  image: nginx:1.27
+  resources:
+    requests: {cpu: 20m, memory: 32Mi}
+    limits: {cpu: 200m, memory: 128Mi}
+  service:
+    # Without codeSource there is no metadata.yaml, so the port must be declared here.
+    ports:
+      - name: http
+        port: 80
+        targetPort: 80
+        protocol: TCP
+    replicas: 1
+    readinessProbe:
+      httpGet: {path: /, port: 80}
+      periodSeconds: 10
+    # Shorthand ingress: host "site.<ingress.hostSuffix>" (e.g. site.fusion.local), path "/".
+    # Only the leftmost DNS label is yours; the operator appends the cluster's suffix.
+    ingressName: site

@@ -1,0 +1,47 @@
+# Streamlit behind Traefik: the same behaviour as ../streamlit-nginx, Traefik style.
+# Traefik takes only a few settings as Ingress annotations; login, headers and the upload
+# limit are Middleware objects the annotation points to. Those Middlewares are platform
+# objects (the gitops account may create only WeaveApps): the fusion-weave Helm chart renders
+# them from ../platform/helm-values-traefik.yaml.
+apiVersion: weave.fusion-platform.io/v1alpha1
+kind: WeaveApp
+metadata:
+  name: streamlit-traefik
+  namespace: fusion
+spec:
+  type: service
+  image: fusion-runner-python312:local
+  codeSource:
+    artifactName: app.template-wizard-service-streamlit
+    tag: stable
+  service:
+    # ONE pod: Traefik's sticky sessions are a Service annotation
+    # (traefik.ingress.kubernetes.io/service.sticky.cookie), and a WeaveApp only lets you
+    # annotate the Ingress. With replicas > 1 a session could jump to a pod that lacks it.
+    replicas: 1
+    readinessProbe:
+      httpGet: {path: /_stcore/health, port: 8501}
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 6
+    ingress:
+      ingressClassName: traefik
+      rules:
+        - name: words-secure       # -> words-secure.<ingress.hostSuffix>
+          path: /
+          pathType: Prefix
+    ingressAnnotations:
+      # Serve on the https entrypoint only (the http -> https redirect is entrypoint-wide in
+      # Traefik, the counterpart of nginx's ssl-redirect).
+      traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      # Middlewares run in this order. Format: <namespace>-<name>@kubernetescrd.
+      #   oauth2-forward-auth  = nginx auth-url + auth-signin + auth-response-headers
+      #   forwarded-https      = X-Forwarded-Proto/-Port fixed to https/443 for this route
+      #   upload-limit         = nginx proxy-body-size
+      # This is ONE annotation value: it REPLACES a router.middlewares value from
+      # ingress.runnerAnnotations.streamlit instead of extending it, so the runner-level
+      # middleware (forwarded-https) is listed again here.
+      traefik.ingress.kubernetes.io/router.middlewares: "fusion-oauth2-forward-auth@kubernetescrd,fusion-forwarded-https@kubernetescrd,fusion-upload-limit@kubernetescrd"
+      # No timeout annotation: Traefik keeps websockets open without per-route settings;
+      # idle/read timeouts are entrypoint-wide (respondingTimeouts) in Traefik's static config.
